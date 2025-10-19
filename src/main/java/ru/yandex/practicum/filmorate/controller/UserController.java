@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -24,26 +25,25 @@ public class UserController {
     public User createUser(@RequestBody User user) {
         validateUser(user);
         user.setId(nextId++);
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (StringUtils.isBlank(user.getName())) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
-        log.info("Добавлен пользователь: {}", user);
+        log.info("Добавлен пользователь с id: {}", user.getId());
+        log.debug("Добавлен пользователь: {}", user);
         return user;
     }
 
     @PutMapping
     public User updateUser(@RequestBody User user) {
-        if (!users.containsKey(user.getId())) {
-            log.warn("Попытка обновления несуществующего пользователя с id: {}", user.getId());
-            throw new NotFoundException("Пользователь с id=" + user.getId() + " не найден.");
-        }
+        checkUserExists(user.getId());
         validateUser(user);
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (StringUtils.isBlank(user.getName())) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
-        log.info("Обновлен пользователь: {}", user);
+        log.info("Обновлен пользователь с id: {}", user.getId());
+        log.debug("Обновлен пользователь: {}", user);
         return user;
     }
 
@@ -65,6 +65,17 @@ public class UserController {
         if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
             log.error("Попытка создания пользователя с датой рождения в будущем: {}", user.getBirthday());
             throw new ValidationException("Дата рождения не может быть в будущем.");
+        }
+    }
+
+    private boolean userExists(Integer id) {
+        return users.containsKey(id);
+    }
+
+    private void checkUserExists(Integer id) {
+        if (!userExists(id)) {
+            log.warn("Попытка обновления несуществующего пользователя с id: {}", id);
+            throw new NotFoundException("Пользователь с id=" + id + " не найден.");
         }
     }
 }

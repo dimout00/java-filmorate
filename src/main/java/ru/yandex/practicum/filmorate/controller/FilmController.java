@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -26,19 +26,18 @@ public class FilmController {
         validateFilm(film);
         film.setId(nextId++);
         films.put(film.getId(), film);
-        log.info("Добавлен фильм: {}", film);
+        log.info("Добавлен фильм с id: {}", film.getId());
+        log.debug("Добавлен фильм: {}", film);
         return film;
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
-        if (!films.containsKey(film.getId())) {
-            log.warn("Попытка обновления несуществующего фильма с id: {}", film.getId());
-            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
-        }
+        checkFilmExists(film.getId());
         validateFilm(film);
         films.put(film.getId(), film);
-        log.info("Обновлен фильм: {}", film);
+        log.info("Обновлен фильм с id: {}", film.getId());
+        log.debug("Обновлен фильм: {}", film);
         return film;
     }
 
@@ -64,6 +63,17 @@ public class FilmController {
         if (film.getDuration() <= 0) {
             log.error("Попытка создания фильма с отрицательной продолжительностью: {}", film.getDuration());
             throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
+        }
+    }
+
+    private boolean filmExists(Integer id) {
+        return films.containsKey(id);
+    }
+
+    private void checkFilmExists(Integer id) {
+        if (!filmExists(id)) {
+            log.warn("Попытка обновления несуществующего фильма с id: {}", id);
+            throw new NotFoundException("Фильм с id=" + id + " не найден.");
         }
     }
 }
