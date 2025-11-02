@@ -25,26 +25,26 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@RequestBody User user) {
         User createdUser = userService.create(user);
-        log.info("Добавлен пользователь: {}", createdUser);
+        log.debug("Добавлен пользователь с id: {}", createdUser.getId());
         return createdUser;
     }
 
     @PutMapping
     public User updateUser(@RequestBody User user) {
         User updatedUser = userService.update(user);
-        log.info("Обновлен пользователь: {}", updatedUser);
+        log.debug("Обновлен пользователь с id: {}", updatedUser.getId());
         return updatedUser;
     }
 
     @GetMapping
     public Collection<User> getAllUsers() {
-        log.info("Получен запрос на получение всех пользователей.");
+        log.debug("Получен запрос на получение всех пользователей.");
         return userService.getAll();
     }
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
-        log.info("Получен запрос на получение пользователя с id={}", id);
+        log.debug("Получен запрос на получение пользователя с id={}", id);
         return userService.getById(id);
     }
 
@@ -60,13 +60,13 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable int id) {
-        log.info("Получен запрос на получение друзей пользователя с id={}", id);
+        log.debug("Получен запрос на получение друзей пользователя с id={}", id);
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
-        log.info("Получен запрос на получение общих друзей пользователей с id={} и id={}", id, otherId);
+        log.debug("Получен запрос на получение общих друзей пользователей с id={} и id={}", id, otherId);
         return userService.getCommonFriends(id, otherId);
     }
 }

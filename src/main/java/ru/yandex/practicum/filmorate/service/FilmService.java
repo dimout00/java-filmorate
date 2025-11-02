@@ -27,21 +27,31 @@ public class FilmService {
 
     public Film create(Film film) {
         validateFilm(film);
-        return filmStorage.create(film);
+        Film createdFilm = filmStorage.create(film);
+        log.info("Создан фильм с id: {}", createdFilm.getId());
+        return createdFilm;
     }
 
     public Film update(Film film) {
         validateFilm(film);
-        filmStorage.getById(film.getId())
-                .orElseThrow(() -> new NotFoundException("Фильм с id=" + film.getId() + " не найден."));
-        return filmStorage.update(film);
+
+        // Явная проверка существования фильма
+        if (filmStorage.getById(film.getId()).isEmpty()) {
+            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
+        }
+
+        Film updatedFilm = filmStorage.update(film);
+        log.info("Обновлен фильм с id: {}", updatedFilm.getId());
+        return updatedFilm;
     }
 
     public List<Film> getAll() {
+        log.debug("Получен запрос на получение всех фильмов");
         return filmStorage.getAll();
     }
 
     public Film getById(int id) {
+        log.debug("Получен запрос на получение фильма с id={}", id);
         return filmStorage.getById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм с id=" + id + " не найден."));
     }
@@ -61,6 +71,7 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(int count) {
+        log.debug("Получен запрос на получение {} популярных фильмов", count);
         return filmStorage.getPopularFilms(count);
     }
 

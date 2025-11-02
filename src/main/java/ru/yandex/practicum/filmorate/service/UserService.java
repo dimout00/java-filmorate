@@ -26,24 +26,34 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        return userStorage.create(user);
+        User createdUser = userStorage.create(user);
+        log.info("Создан пользователь с id: {}", createdUser.getId());
+        return createdUser;
     }
 
     public User update(User user) {
         validateUser(user);
-        userStorage.getById(user.getId())
-                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + user.getId() + " не найден."));
+
+        // Явная проверка существования пользователя
+        if (userStorage.getById(user.getId()).isEmpty()) {
+            throw new NotFoundException("Пользователь с id=" + user.getId() + " не найден.");
+        }
+
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        return userStorage.update(user);
+        User updatedUser = userStorage.update(user);
+        log.info("Обновлен пользователь с id: {}", updatedUser.getId());
+        return updatedUser;
     }
 
     public List<User> getAll() {
+        log.debug("Получен запрос на получение всех пользователей");
         return userStorage.getAll();
     }
 
     public User getById(int id) {
+        log.debug("Получен запрос на получение пользователя с id={}", id);
         return userStorage.getById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id=" + id + " не найден."));
     }
@@ -64,12 +74,14 @@ public class UserService {
 
     public List<User> getFriends(int userId) {
         checkUserExists(userId);
+        log.debug("Получен запрос на получение друзей пользователя с id={}", userId);
         return userStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {
         checkUserExists(userId);
         checkUserExists(otherId);
+        log.debug("Получен запрос на получение общих друзей пользователей с id={} и id={}", userId, otherId);
         return userStorage.getCommonFriends(userId, otherId);
     }
 
