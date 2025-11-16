@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -27,6 +28,8 @@ public class FilmService {
 
     public Film create(Film film) {
         validateFilm(film);
+        validateMpa(film.getMpa());
+        validateGenres(film.getGenres());
         Film createdFilm = filmStorage.create(film);
         log.info("Создан фильм с id: {}", createdFilm.getId());
         return createdFilm;
@@ -34,8 +37,9 @@ public class FilmService {
 
     public Film update(Film film) {
         validateFilm(film);
+        validateMpa(film.getMpa());
+        validateGenres(film.getGenres());
 
-        // Явная проверка существования фильма
         if (filmStorage.getById(film.getId()).isEmpty()) {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
         }
@@ -91,6 +95,22 @@ public class FilmService {
         if (film.getDuration() <= 0) {
             log.error("Попытка создания фильма с отрицательной продолжительностью: {}", film.getDuration());
             throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
+        }
+    }
+
+    private void validateMpa(Mpa mpa) {
+        if (mpa == null || mpa.getId() == null) {
+            throw new ValidationException("MPA рейтинг обязателен для фильма.");
+        }
+    }
+
+    private void validateGenres(List<Genre> genres) {
+        if (genres != null) {
+            // Проверка на дубликаты жанров
+            long distinctCount = genres.stream().map(Genre::getId).distinct().count();
+            if (distinctCount != genres.size()) {
+                throw new ValidationException("Фильм не может содержать дублирующиеся жанры.");
+            }
         }
     }
 
