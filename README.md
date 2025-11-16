@@ -7,6 +7,63 @@ Filmorate Database Schema
 Схема базы данных
 https://github.com/dimout00/java-filmorate/blob/6f52068b88eaf5073752f4741758a31da934575e/filmorate_database_schema.png
 
+```mermaid
+erDiagram
+    users {
+        int user_id PK
+        varchar email UK
+        varchar login
+        varchar name
+        date birthday
+    }
+
+    films {
+        int film_id PK
+        varchar name
+        text description
+        date release_date
+        int duration
+        int mpa_rating_id FK
+    }
+
+    mpa_ratings {
+        int mpa_rating_id PK
+        varchar name UK
+        varchar description
+    }
+
+    genres {
+        int genre_id PK
+        varchar name UK
+    }
+
+    film_genres {
+        int film_id PK,FK
+        int genre_id PK,FK
+    }
+
+    friends {
+        int user_id PK,FK
+        int friend_id PK,FK
+        enum status
+        timestamp created_at
+    }
+
+    likes {
+        int film_id PK,FK
+        int user_id PK,FK
+        timestamp created_at
+    }
+
+    users ||--o{ friends : "has"
+    users ||--o{ likes : "gives"
+    films ||--o{ likes : "receives"
+    films }o--|| mpa_ratings : "has"
+    films }o--o{ genres : "categorized"
+    
+    friends }|--|| users : "friend_user"
+```
+
 Основные таблицы
 users — содержит данные о пользователях.
 
@@ -24,13 +81,13 @@ likes — лайки фильмов от пользователей.
 
 Примеры запросов
 Получить все фильмы
-sql
-```
+
+```sql
 SELECT * FROM films;
 ```
 #Получить топ N популярных фильмов
-sql
-```
+
+```sql
 SELECT f.*, COUNT(l.user_id) AS likes_count
 FROM films f
 LEFT JOIN likes l ON f.film_id = l.film_id
@@ -40,8 +97,7 @@ LIMIT ?;
 ```
 #Получить список друзей пользователя
 
-sql
-```
+```sql
 SELECT u.* 
 FROM friendships f
 JOIN users u ON f.friend_id = u.user_id
@@ -49,8 +105,7 @@ WHERE f.user_id = ? AND f.status = 'confirmed';
 ```
 #Получить общих друзей двух пользователей
 
-sql
-```
+```sql
 WITH friends1 AS (
     SELECT friend_id AS user_id 
     FROM friendships 
@@ -68,39 +123,36 @@ JOIN users u ON f1.user_id = u.user_id;
 ```
 #Добавление нового пользователя
 
-sql
-```
+```sql
 INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?);
 ```
 #Обновление данных пользователя
 
-sql
-
-```
+```sql
 UPDATE users SET email=?, login=?, name=?, birthday=? WHERE user_id=?;
 ```
 
 #Добавление лайка фильму
 
-sql
-
-```
+```sql
 INSERT INTO likes (film_id, user_id) VALUES (?, ?);
 ```
 
 #Удаление лайка
 
-sql
-```
+
+```sql
 DELETE FROM likes WHERE film_id=? AND user_id=?;
-Добавление друга (отправка заявки)
-sql
+```
+
+#Добавление друга (отправка заявки)
+```sql
 INSERT INTO friendships (user_id, friend_id, status) VALUES (?, ?, 'unconfirmed');
 ```
 #Подтверждение дружбы
 
-sql
-```
+
+```sql
 -- Удаляем заявку
 DELETE FROM friendships WHERE user_id=? AND friend_id=? AND status='unconfirmed';
 -- Добавляем две подтвержденные записи
@@ -108,24 +160,24 @@ INSERT INTO friendships (user_id, friend_id, status) VALUES (?, ?, 'confirmed');
 INSERT INTO friendships (user_id, friend_id, status) VALUES (?, ?, 'confirmed');
 ```
 #Удаление друга
-sql
-```
+
+```sql
 DELETE FROM friendships 
 WHERE (user_id=? AND friend_id=? AND status='confirmed') 
    OR (user_id=? AND friend_id=? AND status='confirmed');
    ```
 #Получить жанры фильма
 
-sql
-```
+
+```sql
 SELECT g.* 
 FROM film_genres fg
 JOIN genres g ON fg.genre_id = g.genre_id
 WHERE fg.film_id = ?;
 ```
 #Получить рейтинг MPA фильма
-sql
-```
+
+```sql
 SELECT m.* 
 FROM mpa_ratings m
 JOIN films f ON f.mpa_rating_id = m.mpa_rating_id
