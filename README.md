@@ -5,7 +5,7 @@ Filmorate Database Schema
 База данных Filmorate предназначена для хранения информации о фильмах, пользователях, их предпочтениях и дружеских связях.
 
 Схема базы данных
-https://github.com/dimout00/java-filmorate/filmorate_database_schema.png
+https://github.com/dimout00/java-filmorate/blob/6f52068b88eaf5073752f4741758a31da934575e/filmorate_database_schema.png
 
 Основные таблицы
 users — содержит данные о пользователях.
