@@ -10,63 +10,6 @@ https://github.com/dimout00/java-filmorate/blob/678371a1ec5a176df603d9a3bcf22c6a
 
 ![alt text](https://github.com/dimout00/java-filmorate/blob/4c208bdda792f8e9c730ffead22e22bed71500d4/filmorate_database_schema.png)
 
-```mermaid
-erDiagram
-    users {
-        int user_id PK
-        varchar email UK
-        varchar login
-        varchar name
-        date birthday
-    }
-
-    films {
-        int film_id PK
-        varchar name
-        text description
-        date release_date
-        int duration
-        int mpa_rating_id FK
-    }
-
-    mpa_ratings {
-        int mpa_rating_id PK
-        varchar name UK
-        varchar description
-    }
-
-    genres {
-        int genre_id PK
-        varchar name UK
-    }
-
-    film_genres {
-        int film_id PK,FK
-        int genre_id PK,FK
-    }
-
-    friends {
-        int user_id PK,FK
-        int friend_id PK,FK
-        enum status
-        timestamp created_at
-    }
-
-    likes {
-        int film_id PK,FK
-        int user_id PK,FK
-        timestamp created_at
-    }
-
-    users ||--o{ friends : "has"
-    users ||--o{ likes : "gives"
-    films ||--o{ likes : "receives"
-    films }o--|| mpa_ratings : "has"
-    films }o--o{ genres : "categorized"
-    
-    friends }|--|| users : "friend_user"
-```
-
 Основные таблицы
 users — содержит данные о пользователях.
 
