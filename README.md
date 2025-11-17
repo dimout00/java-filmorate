@@ -8,6 +8,7 @@ Filmorate Database Schema
 https://github.com/dimout00/java-filmorate/blob/678371a1ec5a176df603d9a3bcf22c6aa7fec594/filmorate_database_schema.png
 
 ```mermaid
+
 Table users {
   user_id int [primary key]
   email varchar(255)
@@ -51,19 +52,6 @@ Table likes {
   user_id int
 }
 
-Ref: films.mpa_rating_id > mpa_ratings.mpa_rating_id
-
-Ref: film_genres.film_id > films.film_id
-
-Ref: film_genres.genre_id > genres.genre_id
-
-Ref: friendships.user_id > users.user_id
-
-Ref: friendships.friend_id > users.user_id
-
-Ref: likes.film_id > films.film_id
-
-Ref: likes.user_id > users.user_id
 ```
 
 Основные таблицы
