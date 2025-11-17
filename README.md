@@ -8,7 +8,7 @@ Filmorate Database Schema
 
 https://github.com/dimout00/java-filmorate/blob/678371a1ec5a176df603d9a3bcf22c6aa7fec594/filmorate_database_schema.png
 
-![alt text](https://github.com/dimout00/java-filmorate/blob/4c208bdda792f8e9c730ffead22e22bed71500d4/filmorate_database_schema.png)
+(https://github.com/dimout00/java-filmorate/blob/4c208bdda792f8e9c730ffead22e22bed71500d4/filmorate_database_schema.png)
 
 Основные таблицы
 users — содержит данные о пользователях.
