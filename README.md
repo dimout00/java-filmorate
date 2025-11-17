@@ -5,10 +5,11 @@ Filmorate Database Schema
 База данных Filmorate предназначена для хранения информации о фильмах, пользователях, их предпочтениях и дружеских связях.
 
 Схема базы данных
+
 https://github.com/dimout00/java-filmorate/blob/678371a1ec5a176df603d9a3bcf22c6aa7fec594/filmorate_database_schema.png
 
-```mermaid
 
+```mermaid
 Table users {
   user_id int [primary key]
   email varchar(255)
@@ -51,7 +52,6 @@ Table likes {
   film_id int
   user_id int
 }
-
 ```
 
 Основные таблицы
