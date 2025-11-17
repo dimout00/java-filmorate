@@ -5,63 +5,65 @@ Filmorate Database Schema
 База данных Filmorate предназначена для хранения информации о фильмах, пользователях, их предпочтениях и дружеских связях.
 
 Схема базы данных
-https://github.com/dimout00/java-filmorate/blob/6f52068b88eaf5073752f4741758a31da934575e/filmorate_database_schema.png
+https://github.com/dimout00/java-filmorate/blob/678371a1ec5a176df603d9a3bcf22c6aa7fec594/filmorate_database_schema.png
 
 ```mermaid
-erDiagram
-    users {
-        int user_id PK
-        varchar email UK
-        varchar login
-        varchar name
-        date birthday
-    }
+Table users {
+  user_id int [primary key]
+  email varchar(255)
+  login varchar(255)
+  name varchar(255)
+  birthday date
+}
 
-    films {
-        int film_id PK
-        varchar name
-        text description
-        date release_date
-        int duration
-        int mpa_rating_id FK
-    }
+Table films {
+  film_id int [primary key]
+  name varchar(255)
+  description text
+  release_date date
+  duration int
+  mpa_rating_id int
+}
 
-    mpa_ratings {
-        int mpa_rating_id PK
-        varchar name UK
-        varchar description
-    }
+Table mpa_ratings {
+  mpa_rating_id int [primary key]
+  name varchar(10)
+}
 
-    genres {
-        int genre_id PK
-        varchar name UK
-    }
+Table genres {
+  genre_id int [primary key]
+  name varchar(255)
+}
 
-    film_genres {
-        int film_id PK,FK
-        int genre_id PK,FK
-    }
+Table film_genres {
+  film_id int
+  genre_id int
+}
 
-    friends {
-        int user_id PK,FK
-        int friend_id PK,FK
-        enum status
-        timestamp created_at
-    }
+Table friendships {
+  user_id int
+  friend_id int
+  status varchar(20)
+}
 
-    likes {
-        int film_id PK,FK
-        int user_id PK,FK
-        timestamp created_at
-    }
+Table likes {
+  film_id int
+  user_id int
+}
 
-    users ||--o{ friends : "has"
-    users ||--o{ likes : "gives"
-    films ||--o{ likes : "receives"
-    films }o--|| mpa_ratings : "has"
-    films }o--o{ genres : "categorized"
-    
-    friends }|--|| users : "friend_user"
+Ref: films.mpa_rating_id > mpa_ratings.mpa_rating_id
+
+Ref: film_genres.film_id > films.film_id
+
+Ref: film_genres.genre_id > genres.genre_id
+
+Ref: friendships.user_id > users.user_id
+
+Ref: friendships.friend_id > users.user_id
+
+Ref: likes.film_id > films.film_id
+
+Ref: likes.user_id > users.user_id
 ```
 
 Основные таблицы
