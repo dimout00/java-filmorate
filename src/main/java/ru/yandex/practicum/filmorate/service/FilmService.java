@@ -13,6 +13,9 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,8 +40,9 @@ public class FilmService {
         validateMpa(film.getMpa());
         validateGenres(film.getGenres());
 
-        // Проверить существование MPA
-        mpaService.getMpaById(film.getMpa().getId());
+        // Явная проверка существования MPA и обновление объекта
+        Mpa existingMpa = mpaService.getMpaById(film.getMpa().getId());
+        film.setMpa(existingMpa);
 
         Film createdFilm = filmStorage.create(film);
         log.info("Создан фильм с id: {}", createdFilm.getId());
@@ -50,8 +54,9 @@ public class FilmService {
         validateMpa(film.getMpa());
         validateGenres(film.getGenres());
 
-        // Проверить существование MPA
-        mpaService.getMpaById(film.getMpa().getId());
+        // Явная проверка существования MPA и обновление объекта
+        Mpa existingMpa = mpaService.getMpaById(film.getMpa().getId());
+        film.setMpa(existingMpa);
 
         if (filmStorage.getById(film.getId()).isEmpty()) {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
@@ -118,10 +123,26 @@ public class FilmService {
     }
 
     private void validateGenres(List<Genre> genres) {
-        if (genres != null) {
-            for (Genre genre : genres) {
-                if (genre.getId() != null) {
-                    genreService.getGenreById(genre.getId());
+        if (genres != null && !genres.isEmpty()) {
+            // Собираем все ID жанров для проверки
+            Set<Integer> genreIds = genres.stream()
+                    .map(Genre::getId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            if (!genreIds.isEmpty()) {
+                // Получаем все жанры за один запрос
+                List<Genre> existingGenres = genreService.getGenresByIds(genreIds);
+
+                // Проверяем, что все запрошенные жанры существуют
+                Set<Integer> existingGenreIds = existingGenres.stream()
+                        .map(Genre::getId)
+                        .collect(Collectors.toSet());
+
+                for (Integer genreId : genreIds) {
+                    if (!existingGenreIds.contains(genreId)) {
+                        throw new NotFoundException("Жанр с id=" + genreId + " не найден.");
+                    }
                 }
             }
         }
