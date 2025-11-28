@@ -14,5 +14,5 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
-    private Map<Integer, FriendshipStatus> friends; // ключ - ID друга, значение - статус дружбы
+    private Map<Integer, FriendshipStatus> friends;
 }

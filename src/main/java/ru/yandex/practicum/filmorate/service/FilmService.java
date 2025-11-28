@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -18,18 +19,27 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final MpaService mpaService;
+    private final GenreService genreService;
     private final LocalDate minReleaseDate = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage,
+                       MpaService mpaService, GenreService genreService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.mpaService = mpaService;
+        this.genreService = genreService;
     }
 
     public Film create(Film film) {
         validateFilm(film);
         validateMpa(film.getMpa());
         validateGenres(film.getGenres());
+
+        // Проверить существование MPA
+        mpaService.getMpaById(film.getMpa().getId());
+
         Film createdFilm = filmStorage.create(film);
         log.info("Создан фильм с id: {}", createdFilm.getId());
         return createdFilm;
@@ -39,6 +49,9 @@ public class FilmService {
         validateFilm(film);
         validateMpa(film.getMpa());
         validateGenres(film.getGenres());
+
+        // Проверить существование MPA
+        mpaService.getMpaById(film.getMpa().getId());
 
         if (filmStorage.getById(film.getId()).isEmpty()) {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
@@ -106,10 +119,10 @@ public class FilmService {
 
     private void validateGenres(List<Genre> genres) {
         if (genres != null) {
-            // Проверка на дубликаты жанров
-            long distinctCount = genres.stream().map(Genre::getId).distinct().count();
-            if (distinctCount != genres.size()) {
-                throw new ValidationException("Фильм не может содержать дублирующиеся жанры.");
+            for (Genre genre : genres) {
+                if (genre.getId() != null) {
+                    genreService.getGenreById(genre.getId());
+                }
             }
         }
     }
