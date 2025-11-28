@@ -6,27 +6,44 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final MpaService mpaService;
+    private final GenreService genreService;
     private final LocalDate minReleaseDate = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage,
+                       MpaService mpaService, GenreService genreService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.mpaService = mpaService;
+        this.genreService = genreService;
     }
 
     public Film create(Film film) {
         validateFilm(film);
+        validateMpa(film.getMpa());
+        validateGenres(film.getGenres());
+
+        // Явная проверка существования MPA и обновление объекта
+        Mpa existingMpa = mpaService.getMpaById(film.getMpa().getId());
+        film.setMpa(existingMpa);
+
         Film createdFilm = filmStorage.create(film);
         log.info("Создан фильм с id: {}", createdFilm.getId());
         return createdFilm;
@@ -34,8 +51,13 @@ public class FilmService {
 
     public Film update(Film film) {
         validateFilm(film);
+        validateMpa(film.getMpa());
+        validateGenres(film.getGenres());
 
-        // Явная проверка существования фильма
+        // Явная проверка существования MPA и обновление объекта
+        Mpa existingMpa = mpaService.getMpaById(film.getMpa().getId());
+        film.setMpa(existingMpa);
+
         if (filmStorage.getById(film.getId()).isEmpty()) {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
         }
@@ -91,6 +113,38 @@ public class FilmService {
         if (film.getDuration() <= 0) {
             log.error("Попытка создания фильма с отрицательной продолжительностью: {}", film.getDuration());
             throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
+        }
+    }
+
+    private void validateMpa(Mpa mpa) {
+        if (mpa == null || mpa.getId() == null) {
+            throw new ValidationException("MPA рейтинг обязателен для фильма.");
+        }
+    }
+
+    private void validateGenres(List<Genre> genres) {
+        if (genres != null && !genres.isEmpty()) {
+            // Собираем все ID жанров для проверки
+            Set<Integer> genreIds = genres.stream()
+                    .map(Genre::getId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            if (!genreIds.isEmpty()) {
+                // Получаем все жанры за один запрос
+                List<Genre> existingGenres = genreService.getGenresByIds(genreIds);
+
+                // Проверяем, что все запрошенные жанры существуют
+                Set<Integer> existingGenreIds = existingGenres.stream()
+                        .map(Genre::getId)
+                        .collect(Collectors.toSet());
+
+                for (Integer genreId : genreIds) {
+                    if (!existingGenreIds.contains(genreId)) {
+                        throw new NotFoundException("Жанр с id=" + genreId + " не найден.");
+                    }
+                }
+            }
         }
     }
 
