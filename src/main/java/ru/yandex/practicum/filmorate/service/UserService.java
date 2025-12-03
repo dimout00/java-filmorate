@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -34,7 +35,6 @@ public class UserService {
     public User update(User user) {
         validateUser(user);
 
-        // Явная проверка существования пользователя
         if (userStorage.getById(user.getId()).isEmpty()) {
             throw new NotFoundException("Пользователь с id=" + user.getId() + " не найден.");
         }
@@ -61,8 +61,15 @@ public class UserService {
     public void addFriend(int userId, int friendId) {
         checkUserExists(userId);
         checkUserExists(friendId);
-        userStorage.addFriend(userId, friendId);
-        log.info("Пользователь с id={} добавил в друзья пользователя с id={}", userId, friendId);
+        userStorage.addFriend(userId, friendId, FriendshipStatus.PENDING);
+        log.info("Пользователь с id={} отправил запрос на дружбу пользователю с id={}", userId, friendId);
+    }
+
+    public void confirmFriend(int userId, int friendId) {
+        checkUserExists(userId);
+        checkUserExists(friendId);
+        userStorage.confirmFriend(userId, friendId);
+        log.info("Пользователь с id={} подтвердил дружбу с пользователем id={}", userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {

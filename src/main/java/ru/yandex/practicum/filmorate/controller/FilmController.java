@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/films")
-@Slf4j
 public class FilmController {
     private final FilmService filmService;
 
@@ -25,26 +23,22 @@ public class FilmController {
     @ResponseStatus(HttpStatus.CREATED)
     public Film addFilm(@RequestBody Film film) {
         Film createdFilm = filmService.create(film);
-        log.debug("Добавлен фильм с id: {}", createdFilm.getId());
         return createdFilm;
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
         Film updatedFilm = filmService.update(film);
-        log.debug("Обновлен фильм с id: {}", updatedFilm.getId());
         return updatedFilm;
     }
 
     @GetMapping
     public Collection<Film> getAllFilms() {
-        log.debug("Получен запрос на получение всех фильмов.");
         return filmService.getAll();
     }
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable int id) {
-        log.debug("Получен запрос на получение фильма с id={}", id);
         return filmService.getById(id);
     }
 
@@ -60,7 +54,6 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        log.debug("Получен запрос на получение {} популярных фильмов", count);
         return filmService.getPopularFilms(count);
     }
 }
